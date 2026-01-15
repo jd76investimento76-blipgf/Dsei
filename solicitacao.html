@@ -150,20 +150,49 @@
             font-size: 1em;
         }
 
-        button {
-            width: 100%;
-            padding: 16px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.15em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 32px;
-        }
+        button[type="submit"] {
+    width: 100%;
+    max-width: 500px;               /* evita ficar muito largo em telas grandes */
+    padding: 16px;
+    background: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.18em;
+    font-weight: bold;
+    cursor: pointer;
+    
+    /* Fixo na parte inferior */
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);    /* centraliza perfeitamente */
+    z-index: 1000;
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.35);
+    
+    /* Animação de levitação suave */
+    animation: float 3.5s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
 
-        button:hover { background: #0052a3; }
+button[type="submit"]:hover {
+    background: #0055aa;
+    transform: translateX(-50%) translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 102, 204, 0.5);
+    animation-play-state: paused;   /* pausa a levitação ao hover */
+}
+
+/* Animação de "flutuar" */
+@keyframes float {
+    0%   { transform: translateX(-50%) translateY(0);    }
+    50%  { transform: translateX(-50%) translateY(-8px); }
+    100% { transform: translateX(-50%) translateY(0);    }
+}
+
+/* Espaço no final do conteúdo para não ficar coberto */
+.container {
+    padding-bottom: 110px;   /* ajuste conforme o tamanho do botão */
+}
 
         #sucesso {
             display: none;
@@ -641,4 +670,5 @@
 </script>
 
 </body>
+
 </html>
