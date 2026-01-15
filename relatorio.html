@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AISAN → Relatório 2025</title>
+<style>
+  body{font-family:Arial;margin:10px;background:#f0f8ff;padding-bottom:120px;}
+  .logo-container{text-align:center;margin:20px 0 10px 0;}
+  .logo-container h2{color:#1e40af;font-size:32px;font-weight:bold;margin:0;letter-spacing:3px;}
+  .logo-container p{color:#2c3e50;font-size:17px;font-weight:bold;}
+  h1{text-align:center;color:#2c3e50;font-size:24px;margin:10px 0 30px;font-weight:bold;}
+
+  .cabecalho{background:white;padding:25px 20px;border:3px solid #3498db;border-radius:18px;
+    margin:0 12px 30px;box-shadow:0 6px 20px rgba(0,0,0,0.12);}
+  .linha{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+    gap:15px 25px;margin:20px 0;font-size:17px;}
+  .item{display:flex;align-items:center;min-width:280px;flex:1;}
+  .label{font-weight:bold;color:#2c3e50;width:100px;flex-shrink:0;}
+  .campo{flex:1;min-height:34px;border-bottom:3px dotted #3498db;
+    padding:6px 8px;font-size:17px;}
+  .campo:empty::before{content:"digite aqui";color:#aaa;font-style:italic;}
+  .campo:focus::before{content:none;outline:none;}
+
+  table{width:96%;margin:10px auto;border-collapse:collapse;background:white;
+    font-size:13.5px;box-shadow:0 4px 15px rgba(0,0,0,0.1);border-radius:12px;overflow:hidden;}
+  th,td{border:1px solid #999;padding:10px;text-align:center;vertical-align:middle;}
+  th{background:#3498db;color:white;font-weight:bold;}
+  select{width:98%;padding:9px;border-radius:6px;font-size:15px;}
+  .btn{position:fixed;bottom:15px;left:5%;right:5%;padding:22px;font-size:24px;
+    background:#27ae60;color:white;border:none;border-radius:16px;font-weight:bold;
+    box-shadow:0 8px 25px rgba(0,0,0,0.3);z-index:999;}
+  .btn:disabled{background:#7f8c8d;}
+
+  /* ESTILO DOS CHECKBOXES */
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  .checkbox-item input { margin-right: 6px; transform: scale(1.2); }
+
+  .sucesso { background: #d4edda !important; color: #155724; border-color: #c3e6cb; }
+</style>
+</head>
+<body>
+<div class="logo-container">
+  <h2>DSEI-AL/SE</h2>
+  <p>Distrito Sanitário Especial Indígena</p>
+</div>
+
+<h1>RELATÓRIO MENSAL – AISAN</h1>
+
+<div class="cabecalho">
+  <div class="linha">
+    <div class="item"><div class="label">Data:</div><div class="campo" contenteditable="true" id="data"></div></div>
+    <div class="item"><div class="label">Aldeia:</div><div class="campo" contenteditable="true" id="aldeia"></div></div>
+  </div>
+  <div class="linha">
+    <div class="item" style="flex:1 1 100%;"><div class="label">Município:</div><div class="campo" contenteditable="true" id="municipio"></div></div>
+  </div>
+  <div class="linha">
+    <div class="item"><div class="label">Estado:</div><div class="campo" contenteditable="true" id="estado"></div></div>
+    <div class="item"><div class="label">Polo Base:</div><div class="campo" contenteditable="true" id="polo"></div></div>
+  </div>
+  <div class="linha">
+    <div class="item" style="flex:1 1 100%;"><div class="label">AISAN:</div><div class="campo" contenteditable="true" id="aisan"></div></div>
+  </div>
+</div>
+
+<table id="tabela">
+  <thead><tr><th>ATIVIDADE</th><th>REALIZADA</th><th>QUANTIDADE / TIPO</th><th>JUSTIFICATIVA</th></tr></thead>
+  <tbody id="corpo"></tbody>
+</table>
+
+<button class="btn" id="botao" onclick="gerarESalvar()">📤 ENVIAR RELATÓRIO PARA PLANILHA</button>
+
+<script>
+/* ✅ DATA AUTOMÁTICA DE HOJE (30/12/2025) */
+const hoje = new Date();
+const dataBr = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+document.getElementById("data").innerText = dataBr;
+
+const atividades = [
+"Identificou lixo espalhado e/ou acumulado na aldeia?",
+"As lixeiras/contêineres estão em bom estado de uso?",
+"A comunidade está conseguindo separar o lixo reciclável?",
+"O lixo está sendo acondicionado em sacos plásticos?",
+"Houve queima de lixo na aldeia no último mês?",
+"Qual foi a destinação da maioria dos resíduos?",
+"Se forem outros, especificar a destinação",
+"Existem pontos de acúmulo de água parada e/ou condições para o desenvolvimento de vetores (mosquitos, ratos, baratas) transmissores de doença?",
+"Qual a destinação da maioria dos resíduos orgânicos?",
+"Identificou resíduos perigosos descartados incorretamente? (Pneus, Baterias, Embalagens de agrotóxicos, Óleos lubrificantes, Lâmpadas)",
+"Foi fornecido à aldeia ou ao AISAN material para o GRS?",
+"Quantidade de Rodas de conversa sobre resíduos sólidos no mês:",
+"Quantidade de Palestras sobre resíduos sólidos no mês:",
+"Quantidade de Oficinas sobre resíduos sólidos no mês:",
+"Quantidade de Atividade em escolas indígenas no mês:",
+"Quantidade de Atividade Diagnóstica (realização da caracterização com gravimetria) no mês:",
+"Quantidade de Mutirões de limpeza no mês:",
+"Foi feita atividade de Visita domiciliar no mês?",
+"Nº de casas visitadas:",
+"Quantidade de Campanhas de coleta (materiais recicláveis, logística reversa) no mês:",
+"Quantidade de Implantação de Aterros ou valas no mês:",
+"Temas abordados nas atividades do mês:",
+"NOME DO RESPONSÁVEL PELO PREENCHIMENTO DAS INFORMAÇÕES NESTA PLANILHA",
+"DATA DO PREENCHIMENTO DAS INFORMAÇÕES NESTA PLANILHA",
+"Insira, se desejado, o link de fotos, lista de presença, checklist, etc.",
+"Observações Adicionais (campo livre para comentários)",
+"Quais Equipamentos de Proteção Individual foram entregues no mês?",
+"Informa se houve ação de qualificação do AISAN no mês?",
+"Qual(is) tema(s) foi/foram abordado(s) na capacitação?",
+"Verificou as condições dos recipientes de água intradomiciliar (limpeza e condições físicas)?",
+"O AISAN fez troca de velas dos filtros, ou orientou o usuário sobre a troca nesse mês?",
+"O AISAN recebeu hipoclorito de sódio 2,5% da equipe do SESANI/DISANI?",
+"O AISAN distribuiu hipoclorito de sódio 2,5% e orientou a comunidade sobre o seu uso?",
+"Quantidade de Hipoclorito entregue à comunidade",
+"O AISAN realizou análise de cloro ou coleta para outras análises (quando aplicável)?",
+"Foi entregue insumos para o Tratamento de Água nesse mês?",
+"Foi realizada a retrolavagem em filtros pelo AISAN?",
+"Verificou as condições de limpeza da caixa d'água?",
+"Fez a inspeção do sistema de abastecimento de água?",
+"Em caso de necessidade de manutenção, comunicou ao SESANI sobre demanda?",
+"O AISAN orientou a comunidade sobre o descarte do lixo?",
+"O AISAN verificou a instalação/operação das valas para lixo, no mês?",
+"O AISAN organizou mutirões de limpeza na comunidade, no mês?",
+"O AISAN construiu/implantou/orientou a criação de composteiras?",
+"O AISAN fez limpeza do ponto de captação de água?",
+"O AISAN implantou sistema de coleta de pilhas e baterias?",
+"O AISAN participou de alguma atividade da UBSI neste mês?",
+"O AISAN realizou reuniões, palestras ou campanhas sobre prevenção de doenças relacionadas ao saneamento inadequado?",
+"O AISAN se reuniu com o AIS para discutir os problemas e propor soluções sobre saneamento?",
+"O AISAN realizou visita domiciliar, no mês?",
+"A visita domiciliar foi integrada com o AIS?",
+"O AISAN orientou a comunidade sobre as condições do ponto de captação de água?",
+"O AISAN verificou presença de vetores transmissores de doenças nas aldeias?",
+"Foi realizado registro fotográfico das atividades realizadas pelo AISAN?",
+"OBSERVAÇÕES: Insira razões da não realização de atividades pelos AISAN, ou outras observações."
+];
+
+let h = "";
+atividades.forEach((texto, i) => {
+  if (i === 9) { // resíduos perigosos com checkboxes
+    h += `<tr>
+      <td style="text-align:left;padding:12px 8px;font-size:13.5px;">${texto}</td>
+      <td><select><option></option><option>SIM</option><option>NÃO</option></select></td>
+      <td>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" value="Pneus"> Pneus</label>
+          <label class="checkbox-item"><input type="checkbox" value="Baterias"> Baterias</label>
+          <label class="checkbox-item"><input type="checkbox" value="Embalagens de agrotóxicos"> Embalagens de agrotóxicos</label>
+          <label class="checkbox-item"><input type="checkbox" value="Óleos lubrificantes"> Óleos lubrificantes</label>
+          <label class="checkbox-item"><input type="checkbox" value="Lâmpadas"> Lâmpadas</label>
+          <label class="checkbox-item"><input type="checkbox" value="Nenhum"> Nenhum</label>
+        </div>
+      </td>
+      <td contenteditable style="background:#fff0f0;"></td>
+    </tr>`;
+  } else {
+    h += `<tr>
+      <td style="text-align:left;padding:12px 8px;font-size:13.5px;">${texto}</td>
+      <td><select><option></option><option>SIM</option><option>NÃO</option></select></td>
+      <td contenteditable></td>
+      <td contenteditable style="background:#fff0f0;"></td>
+    </tr>`;
+  }
+});
+document.getElementById("corpo").innerHTML = h;
+
+/* 🔥 FUNÇÃO QUE SÓ ENVIA - SEM BAIXAR NADA! (PERFEITA PRO IPHONE) */
+async function gerarESalvar() {
+  const botao = document.getElementById("botao");
+  botao.disabled = true;
+  botao.innerText = "⏳ ENVIANDO...";
+  botao.classList.add("sucesso");
+
+  const get = id => document.getElementById(id).innerText.trim() || "Não informado";
+
+  // === DADOS PRA PLANILHA (Sheet Monkey) ===
+  const formData = {
+    Data: get("data"),
+    Aldeia: get("aldeia"),
+    Municipio: get("municipio"),
+    Estado: get("estado"),
+    Polo_Base: get("polo"),
+    AISAN: get("aisan"),
+    Data_Preenchimento: new Date().toLocaleDateString('pt-BR')
+  };
+
+  // Adiciona TODAS as respostas da tabela
+  document.querySelectorAll("#tabela tbody tr").forEach((tr, index) => {
+    const atividade = tr.cells[0].innerText.trim();
+    const realizada = tr.cells[1].querySelector("select").value || "";
+    
+    let quantidadeTipo = "";
+    const checkboxes = tr.cells[2].querySelectorAll('input[type="checkbox"]');
+    if (checkboxes.length > 0) {
+      const marcados = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+      quantidadeTipo = marcados.length > 0 ? marcados.join(", ") : "Nenhum";
+    } else {
+      quantidadeTipo = tr.cells[2].innerText.trim();
+    }
+    
+    const justificativa = tr.cells[3].innerText.trim();
+
+    // Campos nomeados seguros pra planilha
+    const chave = `Atividade_${index + 1}`;
+    formData[`${chave}_Pergunta`] = atividade;
+    formData[`${chave}_Realizada`] = realizada;
+    formData[`${chave}_Quantidade_Tipo`] = quantidadeTipo;
+    formData[`${chave}_Justificativa`] = justificativa;
+  });
+
+  // === ENVIA DIRETO PRA PLANILHA (SEM EXCEL!) ===
+  try {
+    const response = await fetch("https://api.sheetmonkey.io/form/iNJgghkvoxMyNRUjfKy2Dz", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    if (response.ok) {
+      botao.innerText = "✅ ENVIADO COM SUCESSO!";
+      botao.style.background = "#28a745";
+      setTimeout(() => {
+        alert("🎉 SUCESSO, IRMÃO!\n\n✅ Relatório ENVIADO pra planilha central!\n📱 NENHUM arquivo baixou (funciona perfeito no iPhone!)\n\nPode preencher outro relatório agora mesmo!");
+        botao.disabled = false;
+        botao.innerText = "📤 ENVIAR NOVO RELATÓRIO";
+        botao.style.background = "#27ae60";
+        botao.classList.remove("sucesso");
+      }, 1500);
+    } else {
+      throw new Error("Resposta do servidor não OK");
+    }
+  } catch (error) {
+    alert("❌ ERRO NO ENVIO!\n\n📱 Verifique:\n• Internet/Wi-Fi\n• Preencheu os campos principais (Aldeia, AISAN)\n\nTente novamente! 💪");
+    console.error("Erro completo:", error);
+  } finally {
+    if (!response || !response.ok) {
+      botao.disabled = false;
+      botao.innerText = "📤 ENVIAR RELATÓRIO PARA PLANILHA";
+      botao.style.background = "#27ae60";
+      botao.classList.remove("sucesso");
+    }
+  }
+}
+</script>
+
+<p style="text-align:center;color:#27ae60;font-weight:bold;margin-top:80px;font-size:16px;">
+  Criado por Jonatha dos Santos – SESANI/DSEI-AL/SE<br>
+  ✅ VERSÃO iPHONE PERFEITA - SÓ ENVIA, SEM BAIXAR! 🚀<br>
+  Data: 30/12/2025
+</p>
+</body>
+</html>

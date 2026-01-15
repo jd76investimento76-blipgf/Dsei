@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitação de Materiais</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 16px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a3c6d;
+            margin: 0 0 24px;
+            font-size: 1.8em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            position: relative;
+            margin: 0 auto 28px;
+            max-width: 100%;           /* importante para mobile */
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 14px 14px 14px 50px;   /* espaço maior à esquerda */
+            border: 2px solid #ddd;
+            border-radius: 999px;           /* bem arredondado */
+            font-size: 1.05em;
+            height: 52px;                   /* altura fixa ajuda alinhamento */
+            line-height: 1.4;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+            font-size: 1.4em;
+            pointer-events: none;           /* evita que clique no ícone interfira */
+        }
+
+        /* Ajustes mobile */
+        @media (max-width: 600px) {
+            .search-container input {
+                font-size: 1em;
+                padding: 12px 12px 12px 48px;
+                height: 48px;
+            }
+            
+            .search-container i {
+                left: 16px;
+                font-size: 1.3em;
+            }
+        }
+
+        /* resto do estilo continua praticamente igual... */
+        .header-fields {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        @media (min-width: 500px) {
+            .header-fields { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .header-fields .item { display: flex; flex-direction: column; gap: 6px; }
+        .header-fields label { font-weight: bold; color: #444; }
+        .header-fields input,
+        .header-fields select {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        select#categoriaSelect {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            font-size: 1.1em;
+            margin: 0 auto 32px;
+            display: block;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        h3 { 
+            margin: 32px 0 20px; 
+            color: #1a3c6d; 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 10px; 
+        }
+
+        .categoria { display: none; margin-bottom: 20px; }
+        .categoria.ativa { display: block; }
+
+        .materials-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 500px)  { .materials-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 900px)  { .materials-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .item label {
+            flex: 1;
+            font-size: 0.97em;
+            line-height: 1.4;
+        }
+
+        .item input[type="number"] {
+            width: 90px;
+            text-align: center;
+            padding: 10px 6px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.15em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 32px;
+        }
+
+        button:hover { background: #0052a3; }
+
+        #sucesso {
+            display: none;
+            margin: 32px auto;
+            max-width: 600px;
+            padding: 20px;
+            background: #e6ffe6;
+            color: #006600;
+            border: 2px solid #28a745;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.25em;
+            font-weight: bold;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Solicitação de Materiais</h1>
+
+    <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Buscar material...">
+    </div>
+
+    <form id="formSolicitacao" action="https://script.google.com/macros/s/AKfycbw5hzmevgTTVMGTuCYwfnjYBrFViGE7WwLm6bbQAkH9bIduknpNvJTgFHG2BITIpvRJ/exec" method="POST">
+
+        <div class="header-fields">
+            <div class="item">
+                <label for="solicitante">Solicitante</label>
+                <input type="text" id="solicitante" name="Solicitante" placeholder="Nome completo" required>
+            </div>
+            <div class="item">
+                <label for="aldeia">Aldeia</label>
+                <input type="text" id="aldeia" name="Aldeia" placeholder="Nome da aldeia" required>
+            </div>
+            <div class="item">
+                <label for="data">Data</label>
+                <input type="date" id="data" name="Data" required>
+            </div>
+        </div>
+
+        <input type="hidden" name="Data da Solicitação" id="data_solicitacao">
+
+        <select id="categoriaSelect">
+    <option value="todos">Todos</option>
+    <option value="hidraulico" selected>Hidráulico</option>
+    <option value="eletrico">Elétrico</option>
+    <option value="grs">GRS</option>
+    <option value="mqai">MQAI</option>
+    <option value="pci">PCI</option>
+    <option value="bombas">Bombas</option>
+    </select>
+
+        <h3>Materiais (informe apenas as quantidades desejadas)</h3>
+
+        <!-- Categorias -->
+        <div id="todos" class="categoria"></div>
+
+        <div id="hidraulico" class="categoria ativa">
+    <h4>Hidráulico</h4>
+    <div class="materials-grid">
+        <div class="item"><label>Adaptador Curto Rosqueável 25 x 3/4</label><input type="number" min="0" value="0" name="Adaptador Curto Rosqueável 25 x 3/4"></div>
+        <div class="item"><label>Adaptador Curto Rosqueável 40 X 1.1/4</label><input type="number" min="0" value="0" name="Adaptador Curto Rosqueável 40 X 1.1/4"></div>
+        <div class="item"><label>Adaptador Curto Rosqueável 50 x 1.1/2</label><input type="number" min="0" value="0" name="Adaptador Curto Rosqueável 50 x 1.1/2"></div>
+        <div class="item"><label>Adaptador Curto Rosqueável 60 x 2</label><input type="number" min="0" value="0" name="Adaptador Curto Rosqueável 60 x 2"></div>
+        <div class="item"><label>Adaptador Curto Rosqueável 75 x 2. 1/2</label><input type="number" min="0" value="0" name="Adaptador Curto Rosqueável 75 x 2. 1/2"></div>
+        <div class="item"><label>Adaptador Flange Caixa D´água 20 X 1/2</label><input type="number" min="0" value="0" name="Adaptador Flange Caixa D´água 20 X 1/2"></div>
+        <div class="item"><label>Adaptador Flange Caixa D´água 25 X 3/4</label><input type="number" min="0" value="0" name="Adaptador Flange Caixa D´água 25 X 3/4"></div>
+        <div class="item"><label>Adaptador Flange Caixa D´água 32 X 1</label><input type="number" min="0" value="0" name="Adaptador Flange Caixa D´água 32 X 1"></div>
+        <div class="item"><label>Adaptador Flange Caixa D´água 50 X 1/2</label><input type="number" min="0" value="0" name="Adaptador Flange Caixa D´água 50 X 1/2"></div>
+        <div class="item"><label>Adaptador Flange Caixa D´água 60 MM</label><input type="number" min="0" value="0" name="Adaptador Flange Caixa D´água 60 MM"></div>
+        <div class="item"><label>Adesivo Incolor 75g Bisnaga</label><input type="number" min="0" value="0" name="Adesivo Incolor 75g Bisnaga"></div>
+        <div class="item"><label>Boia D`Água Horizontal</label><input type="number" min="0" value="0" name="Boia D`Água Horizontal"></div>
+        <div class="item"><label>Bucha de Redução Curta 25 x 20</label><input type="number" min="0" value="0" name="Bucha de Redução Curta 25 x 20"></div>
+        <div class="item"><label>Bucha de Redução Curta 32 x 25</label><input type="number" min="0" value="0" name="Bucha de Redução Curta 32 x 25"></div>
+        <div class="item"><label>Bucha de Redução Curta 40 x 32</label><input type="number" min="0" value="0" name="Bucha de Redução Curta 40 x 32"></div>
+        <div class="item"><label>Bucha de Redução Curta 50 x 40</label><input type="number" min="0" value="0" name="Bucha de Redução Curta 50 x 40"></div>
+        <div class="item"><label>Bucha de Redução Curta 60 x 50</label><input type="number" min="0" value="0" name="Bucha de Redução Curta 60 x 50"></div>
+        <div class="item"><label>Bucha de Redução Curta 76 x 60</label><input type="number" min="0" value="0" name="Bucha de Redução Curta 76 x 60"></div>
+        <div class="item"><label>Bucha de Redução Curta 85 X 75</label><input type="number" min="0" value="0" name="Bucha de Redução Curta 85 X 75"></div>
+        <div class="item"><label>Bucha de Redução Longa 32 x 20</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 32 x 20"></div>
+        <div class="item"><label>Bucha de Redução Longa 40 x 25</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 40 x 25"></div>
+        <div class="item"><label>Bucha de Redução Longa 40 x20</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 40 x20"></div>
+        <div class="item"><label>Bucha de Redução Longa 50 x 20</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 50 x 20"></div>
+        <div class="item"><label>Bucha de redução Longa 50 x 25</label><input type="number" min="0" value="0" name="Bucha de redução Longa 50 x 25"></div>
+        <div class="item"><label>Bucha de Redução Longa 50 x 32</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 50 x 32"></div>
+        <div class="item"><label>Bucha de Redução Longa 60 x 25</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 60 x 25"></div>
+        <div class="item"><label>Bucha de Redução Longa 60 x 32</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 60 x 32"></div>
+        <div class="item"><label>Bucha de Redução Longa 60 x 40</label><input type="number" min="0" value="0" name="Bucha de Redução Longa 60 x 40"></div>
+        <div class="item"><label>Caixa d'Água 2.000L</label><input type="number" min="0" value="0" name="Caixa d'Água 2.000L"></div>
+        <div class="item"><label>Cap Soldável 32 MM</label><input type="number" min="0" value="0" name="Cap Soldável 32 MM"></div>
+        <div class="item"><label>Cap Soldável 40 MM</label><input type="number" min="0" value="0" name="Cap Soldável 40 MM"></div>
+        <div class="item"><label>Cap Soldável 50 MM</label><input type="number" min="0" value="0" name="Cap Soldável 50 MM"></div>
+        <div class="item"><label>Cap Soldável 60 MM</label><input type="number" min="0" value="0" name="Cap Soldável 60 MM"></div>
+        <div class="item"><label>Colar de Tomada 50 MM</label><input type="number" min="0" value="0" name="Colar de Tomada 50 MM"></div>
+        <div class="item"><label>Curva Soldável 20 MM</label><input type="number" min="0" value="0" name="Curva Soldável 20 MM"></div>
+        <div class="item"><label>Curva Soldável 25 MM</label><input type="number" min="0" value="0" name="Curva Soldável 25 MM"></div>
+        <div class="item"><label>Curva Soldável 32 MM</label><input type="number" min="0" value="0" name="Curva Soldável 32 MM"></div>
+        <div class="item"><label>Curva Soldável 40 MM</label><input type="number" min="0" value="0" name="Curva Soldável 40 MM"></div>
+        <div class="item"><label>Curva Soldável 50 MM</label><input type="number" min="0" value="0" name="Curva Soldável 50 MM"></div>
+        <div class="item"><label>Curva Soldável 60 MM</label><input type="number" min="0" value="0" name="Curva Soldável 60 MM"></div>
+        <div class="item"><label>Fita Veda Rosca</label><input type="number" min="0" value="0" name="Fita Veda Rosca"></div>
+        <div class="item"><label>Joelho 20 MM</label><input type="number" min="0" value="0" name="Joelho 20 MM"></div>
+        <div class="item"><label>Joelho 25 MM</label><input type="number" min="0" value="0" name="Joelho 25 MM"></div>
+        <div class="item"><label>Joelho 32 MM</label><input type="number" min="0" value="0" name="Joelho 32 MM"></div>
+        <div class="item"><label>Joelho 40 MM</label><input type="number" min="0" value="0" name="Joelho 40 MM"></div>
+        <div class="item"><label>Joelho 45 Graus 20 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 20 MM"></div>
+        <div class="item"><label>Joelho 45 Graus 25 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 25 MM"></div>
+        <div class="item"><label>Joelho 45 Graus 32 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 32 MM"></div>
+        <div class="item"><label>Joelho 45 Graus 40 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 40 MM"></div>
+        <div class="item"><label>Joelho 45 Graus 50 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 50 MM"></div>
+        <div class="item"><label>Joelho 45 Graus 60 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 60 MM"></div>
+        <div class="item"><label>Joelho 45 Graus 75 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 75 MM"></div>
+        <div class="item"><label>Joelho 50 MM</label><input type="number" min="0" value="0" name="Joelho 50 MM"></div>
+        <div class="item"><label>Joelho 60 MM</label><input type="number" min="0" value="0" name="Joelho 60 MM"></div>
+        <div class="item"><label>Joelho Bucha Latão 20 x 1/2</label><input type="number" min="0" value="0" name="Joelho Bucha Latão 20 x 1/2"></div>
+        <div class="item"><label>Joelho Bucha Latão 25 x 1/2</label><input type="number" min="0" value="0" name="Joelho Bucha Latão 25 x 1/2"></div>
+        <div class="item"><label>Joelho Bucha Latão 25 x 3/4</label><input type="number" min="0" value="0" name="Joelho Bucha Latão 25 x 3/4"></div>
+        <div class="item"><label>Joelho Bucha Latão 32 x 3/4</label><input type="number" min="0" value="0" name="Joelho Bucha Latão 32 x 3/4"></div>
+        <div class="item"><label>Joelho Redução 25 X 20</label><input type="number" min="0" value="0" name="Joelho Redução 25 X 20"></div>
+        <div class="item"><label>Joelho Redução 32 x 25</label><input type="number" min="0" value="0" name="Joelho Redução 32 x 25"></div>
+        <div class="item"><label>Joelho Rosqueável 20 x 1/2</label><input type="number" min="0" value="0" name="Joelho Rosqueável 20 x 1/2"></div>
+        <div class="item"><label>Joelho Rosqueável 25 x 1/2</label><input type="number" min="0" value="0" name="Joelho Rosqueável 25 x 1/2"></div>
+        <div class="item"><label>Joelho Rosqueável 25 x 3/4</label><input type="number" min="0" value="0" name="Joelho Rosqueável 25 x 3/4"></div>
+        <div class="item"><label>Joelho Rosqueável 32 x 3/4</label><input type="number" min="0" value="0" name="Joelho Rosqueável 32 x 3/4"></div>
+        <div class="item"><label>Joelho Soldável 110 MM</label><input type="number" min="0" value="0" name="Joelho Soldável 110 MM"></div>
+        <div class="item"><label>Joelho Soldável 75 MM</label><input type="number" min="0" value="0" name="Joelho Soldável 75 MM"></div>
+        <div class="item"><label>Joelho Soldável 85 MM</label><input type="number" min="0" value="0" name="Joelho Soldável 85 MM"></div>
+        <div class="item"><label>Lavatório de Louça Suspenso</label><input type="number" min="0" value="0" name="Lavatório de Louça Suspenso"></div>
+        <div class="item"><label>Luva de Correr 20 MM</label><input type="number" min="0" value="0" name="Luva de Correr 20 MM"></div>
+        <div class="item"><label>Luva de Correr 25 MM</label><input type="number" min="0" value="0" name="Luva de Correr 25 MM"></div>
+        <div class="item"><label>Luva de Correr 32 MM</label><input type="number" min="0" value="0" name="Luva de Correr 32 MM"></div>
+        <div class="item"><label>Luva de Correr 50 MM</label><input type="number" min="0" value="0" name="Luva de Correr 50 MM"></div>
+        <div class="item"><label>Luva de Correr 60 MM</label><input type="number" min="0" value="0" name="Luva de Correr 60 MM"></div>
+        <div class="item"><label>Luva de Redução 25 x 20</label><input type="number" min="0" value="0" name="Luva de Redução 25 x 20"></div>
+        <div class="item"><label>Luva de Redução 32 x 25</label><input type="number" min="0" value="0" name="Luva de Redução 32 x 25"></div>
+        <div class="item"><label>Luva de Redução 40 X 32</label><input type="number" min="0" value="0" name="Luva de Redução 40 X 32"></div>
+        <div class="item"><label>Luva de Redução 50 x 25</label><input type="number" min="0" value="0" name="Luva de Redução 50 x 25"></div>
+        <div class="item"><label>Luva de Redução 60 X 50</label><input type="number" min="0" value="0" name="Luva de Redução 60 X 50"></div>
+        <div class="item"><label>Luva LR Rosca 20 x 1/2</label><input type="number" min="0" value="0" name="Luva LR Rosca 20 x 1/2"></div>
+        <div class="item"><label>Luva Rosqueável 25 x 3/4</label><input type="number" min="0" value="0" name="Luva Rosqueável 25 x 3/4"></div>
+        <div class="item"><label>Luva Rosqueável 32 x 1</label><input type="number" min="0" value="0" name="Luva Rosqueável 32 x 1"></div>
+        <div class="item"><label>Luva Rosqueável 40 x 1. 1/4</label><input type="number" min="0" value="0" name="Luva Rosqueável 40 x 1. 1/4"></div>
+        <div class="item"><label>Luva Rosqueável 50 x 1. 1/2</label><input type="number" min="0" value="0" name="Luva Rosqueável 50 x 1. 1/2"></div>
+        <div class="item"><label>Luva Soldável 110 MM</label><input type="number" min="0" value="0" name="Luva Soldável 110 MM"></div>
+        <div class="item"><label>Luva Soldável 25 MM</label><input type="number" min="0" value="0" name="Luva Soldável 25 MM"></div>
+        <div class="item"><label>Luva Soldável 40 MM</label><input type="number" min="0" value="0" name="Luva Soldável 40 MM"></div>
+        <div class="item"><label>Luva Soldável 50 MM</label><input type="number" min="0" value="0" name="Luva Soldável 50 MM"></div>
+        <div class="item"><label>Luva Soldável 75 MM</label><input type="number" min="0" value="0" name="Luva Soldável 75 MM"></div>
+        <div class="item"><label>Luva Soldável 85 MM</label><input type="number" min="0" value="0" name="Luva Soldável 85 MM"></div>
+        <div class="item"><label>Nipel Roscavel 1</label><input type="number" min="0" value="0" name="Nipel Roscavel 1"></div>
+        <div class="item"><label>Nipel Roscavel 1.1/4</label><input type="number" min="0" value="0" name="Nipel Roscavel 1.1/4"></div>
+        <div class="item"><label>Registro Rosqueável 1 RR</label><input type="number" min="0" value="0" name="Registro Rosqueável 1 RR"></div>
+        <div class="item"><label>Registro Rosqueável 1. 1/2</label><input type="number" min="0" value="0" name="Registro Rosqueável 1. 1/2"></div>
+        <div class="item"><label>Registro Rosqueável 1. 1/4</label><input type="number" min="0" value="0" name="Registro Rosqueável 1. 1/4"></div>
+        <div class="item"><label>Registro Rosqueável 2 RR</label><input type="number" min="0" value="0" name="Registro Rosqueável 2 RR"></div>
+        <div class="item"><label>Registro Rosqueável 3/4</label><input type="number" min="0" value="0" name="Registro Rosqueável 3/4"></div>
+        <div class="item"><label>Registro Válvula Gaveta de Ferro</label><input type="number" min="0" value="0" name="Registro Válvula Gaveta de Ferro"></div>
+        <div class="item"><label>Resgistro Soldável 25 MM</label><input type="number" min="0" value="0" name="Resgistro Soldável 25 MM"></div>
+        <div class="item"><label>Resgistro Soldável 32 MM</label><input type="number" min="0" value="0" name="Resgistro Soldável 32 MM"></div>
+        <div class="item"><label>Resgistro Soldável 40 MM</label><input type="number" min="0" value="0" name="Resgistro Soldável 40 MM"></div>
+        <div class="item"><label>Resgistro Soldável 50 MM</label><input type="number" min="0" value="0" name="Resgistro Soldável 50 MM"></div>
+        <div class="item"><label>Resgistro Soldável 60 MM</label><input type="number" min="0" value="0" name="Resgistro Soldável 60 MM"></div>
+        <div class="item"><label>Solução Preparatoria 1.000 ML Frasco</label><input type="number" min="0" value="0" name="Solução Preparatoria 1.000 ML Frasco"></div>
+        <div class="item"><label>Tê Rosquéavel 25 x 3/4</label><input type="number" min="0" value="0" name="Tê Rosquéavel 25 x 3/4"></div>
+        <div class="item"><label>Tê Soldável 25 X 20</label><input type="number" min="0" value="0" name="Tê Soldável 25 X 20"></div>
+        <div class="item"><label>Tê Soldável 32 MM</label><input type="number" min="0" value="0" name="Tê Soldável 32 MM"></div>
+        <div class="item"><label>Tê Soldável 40 MM</label><input type="number" min="0" value="0" name="Tê Soldável 40 MM"></div>
+        <div class="item"><label>Tê Soldável 40 X 32</label><input type="number" min="0" value="0" name="Tê Soldável 40 X 32"></div>
+        <div class="item"><label>Tê Soldável 50 MM</label><input type="number" min="0" value="0" name="Tê Soldável 50 MM"></div>
+        <div class="item"><label>Tê Soldável 50 X 25</label><input type="number" min="0" value="0" name="Tê Soldável 50 X 25"></div>
+        <div class="item"><label>Tê Soldável 50 X 32</label><input type="number" min="0" value="0" name="Tê Soldável 50 X 32"></div>
+        <div class="item"><label>Tê Soldável 50 x 40</label><input type="number" min="0" value="0" name="Tê Soldável 50 x 40"></div>
+        <div class="item"><label>Tê Soldável 60 MM</label><input type="number" min="0" value="0" name="Tê Soldável 60 MM"></div>
+        <div class="item"><label>União 32/1 MM</label><input type="number" min="0" value="0" name="União 32/1 MM"></div>
+        <div class="item"><label>União Rosqueável 1. 1/2</label><input type="number" min="0" value="0" name="União Rosqueável 1. 1/2"></div>
+        <div class="item"><label>União Rosqueável 1.1/4</label><input type="number" min="0" value="0" name="União Rosqueável 1.1/4"></div>
+        <div class="item"><label>União Rosqueável 1/2</label><input type="number" min="0" value="0" name="União Rosqueável 1/2"></div>
+        <div class="item"><label>União Rosqueável 3/4</label><input type="number" min="0" value="0" name="União Rosqueável 3/4"></div>
+        <div class="item"><label>União Soldável 20 MM</label><input type="number" min="0" value="0" name="União Soldável 20 MM"></div>
+        <div class="item"><label>União Soldável 25 MM</label><input type="number" min="0" value="0" name="União Soldável 25 MM"></div>
+        <div class="item"><label>União Soldável 32 MM</label><input type="number" min="0" value="0" name="União Soldável 32 MM"></div>
+        <div class="item"><label>União Soldável 40 MM</label><input type="number" min="0" value="0" name="União Soldável 40 MM"></div>
+        <div class="item"><label>União Soldável 50 MM</label><input type="number" min="0" value="0" name="União Soldável 50 MM"></div>
+        <div class="item"><label>União Soldável 60 MM</label><input type="number" min="0" value="0" name="União Soldável 60 MM"></div>
+        <div class="item"><label>Válvula de Retenção Soldável 32 MM</label><input type="number" min="0" value="0" name="Válvula de Retenção Soldável 32 MM"></div>
+        <div class="item"><label>Vara de cano PVC 20 MM</label><input type="number" min="0" value="0" name="Vara de cano PVC 20 MM"></div>
+        <div class="item"><label>Vara de cano PVC 25 MM</label><input type="number" min="0" value="0" name="Vara de cano PVC 25 MM"></div>
+        <div class="item"><label>Vara de cano PVC 32 MM</label><input type="number" min="0" value="0" name="Vara de cano PVC 32 MM"></div>
+        <div class="item"><label>Vara de cano PVC 40 MM</label><input type="number" min="0" value="0" name="Vara de cano PVC 40 MM"></div>
+        <div class="item"><label>Vara de cano PVC 50 MM</label><input type="number" min="0" value="0" name="Vara de cano PVC 50 MM"></div>
+        <div class="item"><label>Vara de cano PVC 60 MM</label><input type="number" min="0" value="0" name="Vara de cano PVC 60 MM"></div>
+        <div class="item"><label>Vara de cano PVC 75 MM</label><input type="number" min="0" value="0" name="Vara de cano PVC 75 MM"></div>
+    </div>
+</div>
+
+        <div id="eletrico" class="categoria">
+    <h4>Elétrico</h4>
+    <div class="materials-grid">
+        <div class="item"><label>Aclipador</label><input type="number" min="0" value="0" name="Aclipador"></div>
+        <div class="item"><label>Alicate amperímetro</label><input type="number" min="0" value="0" name="Alicate amperímetro"></div>
+        <div class="item"><label>Bloco Contato 1810</label><input type="number" min="0" value="0" name="Bloco Contato 1810"></div>
+        <div class="item"><label>Bloco Contato 2510</label><input type="number" min="0" value="0" name="Bloco Contato 2510"></div>
+        <div class="item"><label>Botoeira Verde</label><input type="number" min="0" value="0" name="Botoeira Verde"></div>
+        <div class="item"><label>Botoeira Vermelha</label><input type="number" min="0" value="0" name="Botoeira Vermelha"></div>
+        <div class="item"><label>Broca 5/16 "8 M</label><input type="number" min="0" value="0" name="Broca 5/16 &quot;8 M"></div>
+        <div class="item"><label>Broca 6 MM</label><input type="number" min="0" value="0" name="Broca 6 MM"></div>
+        <div class="item"><label>Broca Extra Longa 6 x 300 MM</label><input type="number" min="0" value="0" name="Broca Extra Longa 6 x 300 MM"></div>
+        <div class="item"><label>Broca Longa 6 x 200 MM</label><input type="number" min="0" value="0" name="Broca Longa 6 x 200 MM"></div>
+        <div class="item"><label>Broca Longa 8 x 200 MM</label><input type="number" min="0" value="0" name="Broca Longa 8 x 200 MM"></div>
+        <div class="item"><label>Broca Mini 1/8</label><input type="number" min="0" value="0" name="Broca Mini 1/8"></div>
+        <div class="item"><label>Broca Mini 3</label><input type="number" min="0" value="0" name="Broca Mini 3"></div>
+        <div class="item"><label>Chave de Fenda</label><input type="number" min="0" value="0" name="Chave de Fenda"></div>
+        <div class="item"><label>Conjunto de Armação P/ Isolador Duplo</label><input type="number" min="0" value="0" name="Conjunto de Armação P/ Isolador Duplo"></div>
+        <div class="item"><label>Contator 18A/220V</label><input type="number" min="0" value="0" name="Contator 18A/220V"></div>
+        <div class="item"><label>Contator 25A/220V</label><input type="number" min="0" value="0" name="Contator 25A/220V"></div>
+        <div class="item"><label>Contator 50A /220V</label><input type="number" min="0" value="0" name="Contator 50A /220V"></div>
+        <div class="item"><label>Contator 9A/220V</label><input type="number" min="0" value="0" name="Contator 9A/220V"></div>
+        <div class="item"><label>Contator Tripolar 18A /220V + contato auxiliar 1NA+ 1NF</label><input type="number" min="0" value="0" name="Contator Tripolar 18A /220V + contato auxiliar 1NA+ 1NF"></div>
+        <div class="item"><label>Contator Tripolar 25A /220V + contato auxiliar 1NA+ 1NF</label><input type="number" min="0" value="0" name="Contator Tripolar 25A /220V + contato auxiliar 1NA+ 1NF"></div>
+        <div class="item"><label>Contator Tripolar 9A /220V + contato auxiliar 1NA+ 1NF</label><input type="number" min="0" value="0" name="Contator Tripolar 9A /220V + contato auxiliar 1NA+ 1NF"></div>
+        <div class="item"><label>Disjuntor Monopolar 100A</label><input type="number" min="0" value="0" name="Disjuntor Monopolar 100A"></div>
+        <div class="item"><label>Disjuntor Monopolar 16A</label><input type="number" min="0" value="0" name="Disjuntor Monopolar 16A"></div>
+        <div class="item"><label>Disjuntor Monopolar 20A</label><input type="number" min="0" value="0" name="Disjuntor Monopolar 20A"></div>
+        <div class="item"><label>Disjuntor Monopolar 25A</label><input type="number" min="0" value="0" name="Disjuntor Monopolar 25A"></div>
+        <div class="item"><label>Disjuntor Monopolar 32A</label><input type="number" min="0" value="0" name="Disjuntor Monopolar 32A"></div>
+        <div class="item"><label>Disjuntor Monopolar 40A</label><input type="number" min="0" value="0" name="Disjuntor Monopolar 40A"></div>
+        <div class="item"><label>Disjuntor Tripolar 40A</label><input type="number" min="0" value="0" name="Disjuntor Tripolar 40A"></div>
+        <div class="item"><label>DPS</label><input type="number" min="0" value="0" name="DPS"></div>
+        <div class="item"><label>DR Bipolar 25A</label><input type="number" min="0" value="0" name="DR Bipolar 25A"></div>
+        <div class="item"><label>Fio Elétrico Flexível Azul 2,5 MM</label><input type="number" min="0" value="0" name="Fio Elétrico Flexível Azul 2,5 MM"></div>
+        <div class="item"><label>Fio Elétrico Flexível Azul 6 MM</label><input type="number" min="0" value="0" name="Fio Elétrico Flexível Azul 6 MM"></div>
+        <div class="item"><label>Fio Elétrico Flexível Preto 6 MM</label><input type="number" min="0" value="0" name="Fio Elétrico Flexível Preto 6 MM"></div>
+        <div class="item"><label>Fio Elétrico Flexível Verde 2,5 MM</label><input type="number" min="0" value="0" name="Fio Elétrico Flexível Verde 2,5 MM"></div>
+        <div class="item"><label>Fio Elétrico Flexível Verde 6 MM</label><input type="number" min="0" value="0" name="Fio Elétrico Flexível Verde 6 MM"></div>
+        <div class="item"><label>Fita isolante</label><input type="number" min="0" value="0" name="Fita isolante"></div>
+        <div class="item"><label>Fita isolantes alta fusão</label><input type="number" min="0" value="0" name="Fita isolantes alta fusão"></div>
+        <div class="item"><label>Haste de Aterramento Cobre 1,50 MT</label><input type="number" min="0" value="0" name="Haste de Aterramento Cobre 1,50 MT"></div>
+        <div class="item"><label>Martelete</label><input type="number" min="0" value="0" name="Martelete"></div>
+        <div class="item"><label>Placa 1 Posto 4x2</label><input type="number" min="0" value="0" name="Placa 1 Posto 4x2"></div>
+        <div class="item"><label>Placa 2 Postos 4x2</label><input type="number" min="0" value="0" name="Placa 2 Postos 4x2"></div>
+        <div class="item"><label>Plafon</label><input type="number" min="0" value="0" name="Plafon"></div>
+        <div class="item"><label>Reator eletrônico</label><input type="number" min="0" value="0" name="Reator eletrônico"></div>
+        <div class="item"><label>Relé Fotoelétrico</label><input type="number" min="0" value="0" name="Relé Fotoelétrico"></div>
+        <div class="item"><label>Relé térmico 10 a 16A</label><input type="number" min="0" value="0" name="Relé térmico 10 a 16A"></div>
+        <div class="item"><label>Relé térmico 40 a 57A</label><input type="number" min="0" value="0" name="Relé térmico 40 a 57A"></div>
+        <div class="item"><label>Relé térmico 6,3 a 10A</label><input type="number" min="0" value="0" name="Relé térmico 6,3 a 10A"></div>
+        <div class="item"><label>Relé térmico 7 a 10A</label><input type="number" min="0" value="0" name="Relé térmico 7 a 10A"></div>
+    </div>
+</div>
+        <div id="bombas" class="categoria">
+    <h4>Bombas</h4>
+    <div class="materials-grid">
+        <div class="item"><label>Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 24</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 24"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 37</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 37"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 39</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 39"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 40</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 40"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 41</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 41"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 43</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 43"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 44</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5 CV, Monofásica 220v, Monoestágio - 44"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5CV, Monofásica 220v, Monoestágio - 38</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5CV, Monofásica 220v, Monoestágio - 38"></div>
+        <div class="item"><label>Bomba Centrífuga, 0,5CV, Monofásica 220v, Monoestágio - 42</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 0,5CV, Monofásica 220v, Monoestágio - 42"></div>
+        <div class="item"><label>Bomba Centrífuga, 1 CV, Monofásica 220v, Monoestágio - 65</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 1 CV, Monofásica 220v, Monoestágio - 65"></div>
+        <div class="item"><label>Bomba Centrífuga, 1 CV, Trifásica, 380v, Monoestágio - 45</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 1 CV, Trifásica, 380v, Monoestágio - 45"></div>
+        <div class="item"><label>Bomba Centrífuga, 1 CV, Trifásica, 380v, Monoestágio - 46</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 1 CV, Trifásica, 380v, Monoestágio - 46"></div>
+        <div class="item"><label>Bomba Centrífuga, 1,5 CV, Monofásica 220v, Monoestágio - 74</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 1,5 CV, Monofásica 220v, Monoestágio - 74"></div>
+        <div class="item"><label>Bomba Centrífuga, 1,5 CV, Monofásica 220v, Monoestágio - 75</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 1,5 CV, Monofásica 220v, Monoestágio - 75"></div>
+        <div class="item"><label>Bomba Centrífuga, 1,5 CV, Trifásica 380v, Monoestágio - 50</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 1,5 CV, Trifásica 380v, Monoestágio - 50"></div>
+        <div class="item"><label>Bomba Centrífuga, 15 CV, Trifásica 380v, Monoestágio - 47</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 15 CV, Trifásica 380v, Monoestágio - 47"></div>
+        <div class="item"><label>Bomba Centrífuga, 15 CV, Trifásica 380v, Monoestágio - 66</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 15 CV, Trifásica 380v, Monoestágio - 66"></div>
+        <div class="item"><label>Bomba Centrífuga, 2 CV, Trifásica 380v, 2 estágios - 54</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 2 CV, Trifásica 380v, 2 estágios - 54"></div>
+        <div class="item"><label>Bomba Centrífuga, 2 CV, Trifásica 380v, 4 Estágios - 31</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 2 CV, Trifásica 380v, 4 Estágios - 31"></div>
+        <div class="item"><label>Bomba Centrífuga, 2 CV, Trifásica 380v, 4 Estágios - 32</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 2 CV, Trifásica 380v, 4 Estágios - 32"></div>
+        <div class="item"><label>Bomba Centrífuga, 2 CV, Trifásica 380v, 4 Estágios - 33</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 2 CV, Trifásica 380v, 4 Estágios - 33"></div>
+        <div class="item"><label>Bomba Centrífuga, 2 CV, Trifásica 380v, Monoestágio - 18</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 2 CV, Trifásica 380v, Monoestágio - 18"></div>
+        <div class="item"><label>Bomba Centrífuga, 2 CV, Trifásica 380v, Monoestágio - 20</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 2 CV, Trifásica 380v, Monoestágio - 20"></div>
+        <div class="item"><label>Bomba Centrífuga, 2 CV, Trifásica 380v, Monoestágio - 57</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 2 CV, Trifásica 380v, Monoestágio - 57"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 4 estágios - 58</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 4 estágios - 58"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 4 estágios - 59</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 4 estágios - 59"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 5 estágios - 55</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 5 estágios - 55"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 29</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 29"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 30</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 30"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 34</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 34"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 68</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 68"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 69</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, 6 Estágios - 69"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 19</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 19"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 21</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 21"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 22</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 22"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 23</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 23"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 51</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 51"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 52</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 52"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 56</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 56"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 60</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 60"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 76</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 76"></div>
+        <div class="item"><label>Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 77</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 3 CV, Trifásica 380v, Monoestágio - 77"></div>
+        <div class="item"><label>Bomba Centrífuga, 4 CV, Monofásica 220v, 6 estágios - 63</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 4 CV, Monofásica 220v, 6 estágios - 63"></div>
+        <div class="item"><label>Bomba Centrífuga, 4 CV, Trifásica 380v, Monoestágio, -14</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 4 CV, Trifásica 380v, Monoestágio, -14"></div>
+        <div class="item"><label>Bomba Centrífuga, 5 CV, Trifásica 380v, 2 estágios</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5 CV, Trifásica 380v, 2 estágios"></div>
+        <div class="item"><label>Bomba Centrífuga, 5 CV, Trifásica 380v, 3 estágios - 48</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5 CV, Trifásica 380v, 3 estágios - 48"></div>
+        <div class="item"><label>Bomba Centrífuga, 5 CV, Trifásica 380v, 9 Estágios - 67</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5 CV, Trifásica 380v, 9 Estágios - 67"></div>
+        <div class="item"><label>Bomba Centrífuga, 5 CV, Trifásica 380v, Monoestágio - 15</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5 CV, Trifásica 380v, Monoestágio - 15"></div>
+        <div class="item"><label>Bomba Centrífuga, 5 CV, Trifásica 380v, Monoestágio - 70</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5 CV, Trifásica 380v, Monoestágio - 70"></div>
+        <div class="item"><label>Bomba Centrífuga, 5 CV, Trifásica 380v, Monoestágio - 71</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5 CV, Trifásica 380v, Monoestágio - 71"></div>
+        <div class="item"><label>Bomba Centrífuga, 5.5 CV, Trifásica 380v, Monoestágio - 61</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5.5 CV, Trifásica 380v, Monoestágio - 61"></div>
+        <div class="item"><label>Bomba Centrífuga, 5.5 CV, Trifásica 380v, Monoestágio - 62</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 5.5 CV, Trifásica 380v, Monoestágio - 62"></div>
+        <div class="item"><label>Bomba Centrífuga, 7,5 CV, Trifásica 380v, 3 Estágios - 16</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 7,5 CV, Trifásica 380v, 3 Estágios - 16"></div>
+        <div class="item"><label>Bomba Centrífuga, 7,5 CV, Trifásica 380v, Monoestágio - 53</label><input type="number" min="0" value="0" name="Bomba Centrífuga, 7,5 CV, Trifásica 380v, Monoestágio - 53"></div>
+        <div class="item"><label>Bomba Submersa, 1,5 CV, Trifásica 220v, 15 estágios - 92</label><input type="number" min="0" value="0" name="Bomba Submersa, 1,5 CV, Trifásica 220v, 15 estágios - 92"></div>
+        <div class="item"><label>Bomba Submersa, 1,5 CV, Trifásica 220v, 15 estágios - 93</label><input type="number" min="0" value="0" name="Bomba Submersa, 1,5 CV, Trifásica 220v, 15 estágios - 93"></div>
+        <div class="item"><label>Bomba Submersa, 1,5 CV, Trifásica 220v, 15 estágios - 95</label><input type="number" min="0" value="0" name="Bomba Submersa, 1,5 CV, Trifásica 220v, 15 estágios - 95"></div>
+        <div class="item"><label>Bomba Submersa, 2 CV, Monofásica 220v, 15 estágios - 78</label><input type="number" min="0" value="0" name="Bomba Submersa, 2 CV, Monofásica 220v, 15 estágios - 78"></div>
+        <div class="item"><label>Bomba Submersa, 2 CV, Monofásica 220v, 15 estágios - 79</label><input type="number" min="0" value="0" name="Bomba Submersa, 2 CV, Monofásica 220v, 15 estágios - 79"></div>
+        <div class="item"><label>Bomba Submersa, 2 CV, Trifásica 220v, 12 estágios - 94</label><input type="number" min="0" value="0" name="Bomba Submersa, 2 CV, Trifásica 220v, 12 estágios - 94"></div>
+        <div class="item"><label>Bomba Submersa, 2 CV, Trifásica 380v, 11 estágios - 80</label><input type="number" min="0" value="0" name="Bomba Submersa, 2 CV, Trifásica 380v, 11 estágios - 80"></div>
+        <div class="item"><label>Bomba Submersa, 2 CV, Trifásica 380v, 11 estágios - 81</label><input type="number" min="0" value="0" name="Bomba Submersa, 2 CV, Trifásica 380v, 11 estágios - 81"></div>
+        <div class="item"><label>Bomba Submersa, 2 CV, Trifásica 380v, 11 estágios - 82</label><input type="number" min="0" value="0" name="Bomba Submersa, 2 CV, Trifásica 380v, 11 estágios - 82"></div>
+        <div class="item"><label>Bomba Submersa, 2 CV, Trifásica 380v, 14 estágios - 90</label><input type="number" min="0" value="0" name="Bomba Submersa, 2 CV, Trifásica 380v, 14 estágios - 90"></div>
+        <div class="item"><label>Bomba Submersa, 3 CV, Trifásica 380v, 15 estágios - 88</label><input type="number" min="0" value="0" name="Bomba Submersa, 3 CV, Trifásica 380v, 15 estágios - 88"></div>
+        <div class="item"><label>Bomba Submersa, 3 CV, Trifásica 380v, 15 estágios - 89</label><input type="number" min="0" value="0" name="Bomba Submersa, 3 CV, Trifásica 380v, 15 estágios - 89"></div>
+        <div class="item"><label>Bomba Submersa, 5,5 CV, Trifásica 380v, 14 estágios - 85</label><input type="number" min="0" value="0" name="Bomba Submersa, 5,5 CV, Trifásica 380v, 14 estágios - 85"></div>
+        <div class="item"><label>Bomba Submersa, 5,5 CV, Trifásica 380v, 34 estágios - 86</label><input type="number" min="0" value="0" name="Bomba Submersa, 5,5 CV, Trifásica 380v, 34 estágios - 86"></div>
+        <div class="item"><label>Bomba Submersa, 5,5 CV, Trifásica 380v, 34 estágios - 87</label><input type="number" min="0" value="0" name="Bomba Submersa, 5,5 CV, Trifásica 380v, 34 estágios - 87"></div>
+    </div>
+</div>    
+
+        <div id="grs" class="categoria">
+    <h4>GRS</h4>
+    <div class="materials-grid">
+        <div class="item"><label>Arco de Serra</label><input type="number" min="0" value="0" name="Arco de Serra"></div>
+        <div class="item"><label>Bandeja Plástica Amarela para Pintura</label><input type="number" min="0" value="0" name="Bandeja Plástica Amarela para Pintura"></div>
+        <div class="item"><label>Broxa Retangular</label><input type="number" min="0" value="0" name="Broxa Retangular"></div>
+        <div class="item"><label>Cabo de Vassoura</label><input type="number" min="0" value="0" name="Cabo de Vassoura"></div>
+        <div class="item"><label>Cesto 100L</label><input type="number" min="0" value="0" name="Cesto 100L"></div>
+        <div class="item"><label>Chave P/ Cano 14"</label><input type="number" min="0" value="0" name="Chave P/ Cano 14&quot;"></div>
+        <div class="item"><label>Enxadinha</label><input type="number" min="0" value="0" name="Enxadinha"></div>
+        <div class="item"><label>Extensão Elétrica</label><input type="number" min="0" value="0" name="Extensão Elétrica"></div>
+        <div class="item"><label>Facão para Mato 16 Pol</label><input type="number" min="0" value="0" name="Facão para Mato 16 Pol"></div>
+        <div class="item"><label>Facão para Mato 20 Pol</label><input type="number" min="0" value="0" name="Facão para Mato 20 Pol"></div>
+        <div class="item"><label>Fio de Nylon P/ Rocadeira</label><input type="number" min="0" value="0" name="Fio de Nylon P/ Rocadeira"></div>
+        <div class="item"><label>Lixeira Descarte De Pilhas e Baterias</label><input type="number" min="0" value="0" name="Lixeira Descarte De Pilhas e Baterias"></div>
+        <div class="item"><label>Lona Plástica</label><input type="number" min="0" value="0" name="Lona Plástica"></div>
+        <div class="item"><label>Machado</label><input type="number" min="0" value="0" name="Machado"></div>
+        <div class="item"><label>Pano de Chão</label><input type="number" min="0" value="0" name="Pano de Chão"></div>
+        <div class="item"><label>Protetor Solar 60 FPS</label><input type="number" min="0" value="0" name="Protetor Solar 60 FPS"></div>
+        <div class="item"><label>Rodo de 60 CM Grande</label><input type="number" min="0" value="0" name="Rodo de 60 CM Grande"></div>
+        <div class="item"><label>Rolo P/ Pintura - Branco</label><input type="number" min="0" value="0" name="Rolo P/ Pintura - Branco"></div>
+        <div class="item"><label>Saco de Lixo Azul 100L</label><input type="number" min="0" value="0" name="Saco de Lixo Azul 100L"></div>
+        <div class="item"><label>Saco de Lixo Preto 100L</label><input type="number" min="0" value="0" name="Saco de Lixo Preto 100L"></div>
+        <div class="item"><label>Saco de Lixo Preto 60L</label><input type="number" min="0" value="0" name="Saco de Lixo Preto 60L"></div>
+        <div class="item"><label>Serra de Aço</label><input type="number" min="0" value="0" name="Serra de Aço"></div>
+        <div class="item"><label>Serrote</label><input type="number" min="0" value="0" name="Serrote"></div>
+        <div class="item"><label>Suporte Garfo Para Rolo</label><input type="number" min="0" value="0" name="Suporte Garfo Para Rolo"></div>
+        <div class="item"><label>Torneira de Jardim</label><input type="number" min="0" value="0" name="Torneira de Jardim"></div>
+        <div class="item"><label>Vassourão Direito</label><input type="number" min="0" value="0" name="Vassourão Direito"></div>
+    </div>
+</div>
+
+        <div id="mqai" class="categoria">
+    <h4>MQAI</h4>
+    <div class="materials-grid">
+        <div class="item"><label>Balde de Cloro Pastilhas 10KG V - 12/26</label><input type="number" min="0" value="0" name="Balde de Cloro Pastilhas 10KG V - 12/26"></div>
+        <div class="item"><label>Bombona Cloro Plastilha 46KG V - 12/26</label><input type="number" min="0" value="0" name="Bombona Cloro Plastilha 46KG V - 12/26"></div>
+        <div class="item"><label>Bombona de Cloro 50L V - 30/02/26</label><input type="number" min="0" value="0" name="Bombona de Cloro 50L V - 30/02/26"></div>
+        <div class="item"><label>Sulfato de Alumínio V - 12/09/26</label><input type="number" min="0" value="0" name="Sulfato de Alumínio V - 12/09/26"></div>
+    </div>
+</div>
+
+        <div id="pci" class="categoria">
+    <h4>PCI</h4>
+    <div class="materials-grid">
+        <div class="item"><label>Abrigo Para Extintor</label><input type="number" min="0" value="0" name="Abrigo Para Extintor"></div>
+        <div class="item"><label>Extintor (MPK 6 L)</label><input type="number" min="0" value="0" name="Extintor (MPK 6 L)"></div>
+        <div class="item"><label>Extintor Pó Químico (ABC 6 KG)</label><input type="number" min="0" value="0" name="Extintor Pó Químico (ABC 6 KG)"></div>
+        <div class="item"><label>Luminárias de Emergência</label><input type="number" min="0" value="0" name="Luminárias de Emergência"></div>
+        <div class="item"><label>Placa de Orientação da Saída (S3)</label><input type="number" min="0" value="0" name="Placa de Orientação da Saída (S3)"></div>
+        <div class="item"><label>Placa de Sinalização de Alerta (A2)</label><input type="number" min="0" value="0" name="Placa de Sinalização de Alerta (A2)"></div>
+        <div class="item"><label>Placa de Sinalização de Extintor (E5) e Agente Extintor (N2) - ABC</label><input type="number" min="0" value="0" name="Placa de Sinalização de Extintor (E5) e Agente Extintor (N2) - ABC"></div>
+        <div class="item"><label>Placa de Sinalização de Extintor (E5) e Agente Extintor (N2) - K</label><input type="number" min="0" value="0" name="Placa de Sinalização de Extintor (E5) e Agente Extintor (N2) - K"></div>
+        <div class="item"><label>Placa de Sinalização de Indicação de Extintor 30x30cm (E5)</label><input type="number" min="0" value="0" name="Placa de Sinalização de Indicação de Extintor 30x30cm (E5)"></div>
+    </div>
+</div>
+
+        <button type="submit">Enviar Solicitação</button>
+
+    </form>
+
+    <div id="sucesso">✓ Solicitação enviada com sucesso!</div>
+
+</div>
+
+<script>
+    // Data atual
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = hoje;
+    document.getElementById('data_solicitacao').value = new Date().toLocaleString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        dateStyle: 'short',
+        timeStyle: 'medium'
+    });
+
+    // Controle de categorias
+    const select = document.getElementById('categoriaSelect');
+    const categorias = document.querySelectorAll('.categoria:not(#todos)');
+
+    function mostrarCategoria(valor) {
+        categorias.forEach(cat => cat.classList.remove('ativa'));
+
+        if (valor === "todos") {
+            categorias.forEach(cat => cat.classList.add('ativa'));
+        } else {
+            const catSelecionada = document.getElementById(valor);
+            if (catSelecionada) catSelecionada.classList.add('ativa');
+        }
+
+        // Limpa busca e reaplica filtro
+        document.getElementById('searchInput').value = '';
+        filtrarMateriais('');
+    }
+
+    select.addEventListener('change', () => mostrarCategoria(select.value));
+
+    // Busca em tempo real
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', () => {
+        filtrarMateriais(searchInput.value);
+    });
+
+    function filtrarMateriais(termo) {
+        const termoLower = termo.toLowerCase().trim();
+        const itens = document.querySelectorAll('.categoria.ativa .item');
+
+        itens.forEach(item => {
+            const nome = item.querySelector('label').textContent.toLowerCase();
+            item.style.display = nome.includes(termoLower) ? '' : 'none';
+        });
+    }
+
+    // Envio do formulário
+    document.getElementById('formSolicitacao').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(() => {
+            const msg = document.getElementById('sucesso');
+            msg.style.display = 'block';
+            this.reset();
+            document.querySelectorAll('input[type="number"]').forEach(el => el.value = "0");
+            document.getElementById('data').value = hoje;
+            searchInput.value = '';
+            filtrarMateriais('');
+
+            setTimeout(() => msg.style.display = 'none', 6000);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Erro ao enviar. Verifique sua conexão.');
+        });
+    });
+
+    // Opcional: começar já mostrando "Todos"
+    // mostrarCategoria('todos');
+</script>
+
+</body>
+</html>

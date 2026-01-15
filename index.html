@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            
+        }
+
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+        
+        }
+
+        header {
+            width: 100%;
+            background: #f7f6f6;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        header img {
+            width: 100%;
+            height: 260px;
+            display: block;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            margin-top: -110px;          /* mantém seu ajuste atual */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+        }
+
+        .pagina {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;                   /* espaço entre os botões */
+            width: 100%;
+            max-width: 320px;            /* evita que fique muito largo em telas grandes */
+            padding: 0 15px;
+        }
+
+        /* Estilo dos botões */
+        .botao {
+            width: 260px;
+            height: 50px;                /* altura maior, mais confortável no toque */
+            border-radius: 10px;
+            background-color: #6c5ce7;   /* roxo legal - mude a cor se quiser */
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .botao:hover {
+            background-color: #5a4bc7;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .botao.desabilitado {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .botao.desabilitado:hover {
+            background-color: #bdc3c7;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="Captura de tela 2026-01-15 154721.png" alt="Imagem principal">
+    </header>
+
+    <div class="container">
+        <div class="pagina">
+            <a href="relatorio.html" class="botao">Relatório Geral Mensal</a>
+            
+            <a href="solicitacao.html" class="botao">Solicitação de Material</a>
+            
+            <button class="botao desabilitado" disabled>Indisponível no Momento</button>
+        </div>
+    </div>
+</body>
+</html>
