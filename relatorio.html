@@ -32,24 +32,6 @@
     box-shadow:0 8px 25px rgba(0,0,0,0.3);z-index:999;}
   .btn:disabled{background:#7f8c8d;}
 
-  /* ESTILO DOS CHECKBOXES */
-  .checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    font-size: 13px;
-  }
-  .checkbox-item {
-    display: flex;
-    align-items: center;
-    background: #f8f9fa;
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-  }
-  .checkbox-item input { margin-right: 6px; transform: scale(1.2); }
-
   .sucesso { background: #d4edda !important; color: #155724; border-color: #c3e6cb; }
 </style>
 </head>
@@ -86,7 +68,7 @@
 <button class="btn" id="botao" onclick="gerarESalvar()">📤 ENVIAR RELATÓRIO PARA PLANILHA</button>
 
 <script>
-/* ✅ DATA AUTOMÁTICA DE HOJE (30/12/2025) */
+/* DATA AUTOMÁTICA */
 const hoje = new Date();
 const dataBr = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
 document.getElementById("data").innerText = dataBr;
@@ -97,11 +79,47 @@ const atividades = [
 "A comunidade está conseguindo separar o lixo reciclável?",
 "O lixo está sendo acondicionado em sacos plásticos?",
 "Houve queima de lixo na aldeia no último mês?",
-"Qual foi a destinação da maioria dos resíduos?",
+{ 
+  texto: "Qual foi a destinação da maioria dos resíduos?",
+  tipo: "select",
+  opcoes: [
+    "", 
+    "Compostagem",
+    "Alimentação Animal",
+    "Coleta pela prefeitura",
+    "Colocado diretamente na planta",
+    "Biodigestor",
+    "Outro (especificar na justificativa)"
+  ]
+},
 "Se forem outros, especificar a destinação",
 "Existem pontos de acúmulo de água parada e/ou condições para o desenvolvimento de vetores (mosquitos, ratos, baratas) transmissores de doença?",
-"Qual a destinação da maioria dos resíduos orgânicos?",
-"Identificou resíduos perigosos descartados incorretamente? (Pneus, Baterias, Embalagens de agrotóxicos, Óleos lubrificantes, Lâmpadas)",
+{ 
+  texto: "Qual a destinação da maioria dos resíduos orgânicos?",
+  tipo: "select",
+  opcoes: [
+    "", 
+    "Coleta da prefeitura / serviço público",
+    "Queima",
+    "Enterro / valas",
+    "Depósito a céu aberto",
+    "Compostagem / composteiras",
+    "Outro (especificar na justificativa)"
+  ]
+},
+{ 
+  texto: "Identificou resíduos perigosos descartados incorretamente?",
+  tipo: "select",
+  opcoes: [
+    "",
+    "Pneus",
+    "Baterias",
+    "Embalagens de Agrotóxicos",
+    "óleos Lubrificantes",
+    "Lâmpadas",
+    "Outro (especificar na justificativa)"
+  ]
+},
 "Foi fornecido à aldeia ou ao AISAN material para o GRS?",
 "Quantidade de Rodas de conversa sobre resíduos sólidos no mês:",
 "Quantidade de Palestras sobre resíduos sólidos no mês:",
@@ -150,24 +168,28 @@ const atividades = [
 ];
 
 let h = "";
-atividades.forEach((texto, i) => {
-  if (i === 9) { // resíduos perigosos com checkboxes
+atividades.forEach((item, i) => {
+  let texto, tipo = "normal", opcoes = [];
+
+  if (typeof item === "string") {
+    texto = item;
+  } else {
+    texto = item.texto;
+    tipo = item.tipo || "normal";
+    opcoes = item.opcoes || [];
+  }
+
+  if (tipo === "select" && opcoes.length > 0) {
+    // Perguntas com select personalizado
+    let optionsHtml = opcoes.map(op => `<option>${op}</option>`).join("");
     h += `<tr>
       <td style="text-align:left;padding:12px 8px;font-size:13.5px;">${texto}</td>
-      <td><select><option></option><option>SIM</option><option>NÃO</option></select></td>
-      <td>
-        <div class="checkbox-group">
-          <label class="checkbox-item"><input type="checkbox" value="Pneus"> Pneus</label>
-          <label class="checkbox-item"><input type="checkbox" value="Baterias"> Baterias</label>
-          <label class="checkbox-item"><input type="checkbox" value="Embalagens de agrotóxicos"> Embalagens de agrotóxicos</label>
-          <label class="checkbox-item"><input type="checkbox" value="Óleos lubrificantes"> Óleos lubrificantes</label>
-          <label class="checkbox-item"><input type="checkbox" value="Lâmpadas"> Lâmpadas</label>
-          <label class="checkbox-item"><input type="checkbox" value="Nenhum"> Nenhum</label>
-        </div>
-      </td>
+      <td><select><option></option>${optionsHtml}</select></td>
+      <td contenteditable></td>
       <td contenteditable style="background:#fff0f0;"></td>
     </tr>`;
   } else {
+    // Todas as outras linhas (incluindo a de resíduos perigosos) voltam ao padrão SIM/NÃO + texto editável
     h += `<tr>
       <td style="text-align:left;padding:12px 8px;font-size:13.5px;">${texto}</td>
       <td><select><option></option><option>SIM</option><option>NÃO</option></select></td>
@@ -178,7 +200,7 @@ atividades.forEach((texto, i) => {
 });
 document.getElementById("corpo").innerHTML = h;
 
-/* 🔥 FUNÇÃO QUE SÓ ENVIA - SEM BAIXAR NADA! (PERFEITA PRO IPHONE) */
+/* FUNÇÃO DE ENVIO */
 async function gerarESalvar() {
   const botao = document.getElementById("botao");
   botao.disabled = true;
@@ -187,7 +209,6 @@ async function gerarESalvar() {
 
   const get = id => document.getElementById(id).innerText.trim() || "Não informado";
 
-  // === DADOS PRA PLANILHA (Sheet Monkey) ===
   const formData = {
     Data: get("data"),
     Aldeia: get("aldeia"),
@@ -198,25 +219,14 @@ async function gerarESalvar() {
     Data_Preenchimento: new Date().toLocaleDateString('pt-BR')
   };
 
-  // Adiciona TODAS as respostas da tabela
   document.querySelectorAll("#tabela tbody tr").forEach((tr, index) => {
     const atividade = tr.cells[0].innerText.trim();
-    const realizada = tr.cells[1].querySelector("select").value || "";
+    const realizada = tr.cells[1].querySelector("select")?.value || "";
     
-    let quantidadeTipo = "";
-    const checkboxes = tr.cells[2].querySelectorAll('input[type="checkbox"]');
-    if (checkboxes.length > 0) {
-      const marcados = Array.from(checkboxes)
-        .filter(cb => cb.checked)
-        .map(cb => cb.value);
-      quantidadeTipo = marcados.length > 0 ? marcados.join(", ") : "Nenhum";
-    } else {
-      quantidadeTipo = tr.cells[2].innerText.trim();
-    }
+    let quantidadeTipo = tr.cells[2].innerText.trim(); // Agora sempre texto editável (sem checkboxes)
     
     const justificativa = tr.cells[3].innerText.trim();
 
-    // Campos nomeados seguros pra planilha
     const chave = `Atividade_${index + 1}`;
     formData[`${chave}_Pergunta`] = atividade;
     formData[`${chave}_Realizada`] = realizada;
@@ -224,7 +234,6 @@ async function gerarESalvar() {
     formData[`${chave}_Justificativa`] = justificativa;
   });
 
-  // === ENVIA DIRETO PRA PLANILHA (SEM EXCEL!) ===
   try {
     const response = await fetch("https://api.sheetmonkey.io/form/iNJgghkvoxMyNRUjfKy2Dz", {
       method: "POST",
@@ -236,18 +245,18 @@ async function gerarESalvar() {
       botao.innerText = "✅ ENVIADO COM SUCESSO!";
       botao.style.background = "#28a745";
       setTimeout(() => {
-        alert("🎉 SUCESSO, IRMÃO!\n\n✅ Relatório ENVIADO pra planilha central!\n📱 NENHUM arquivo baixou (funciona perfeito no iPhone!)\n\nPode preencher outro relatório agora mesmo!");
+        alert("🎉 Relatório enviado com sucesso!");
         botao.disabled = false;
-        botao.innerText = "📤 ENVIAR NOVO RELATÓRIO";
+        botao.innerText = "📤 ENVIAR RELATÓRIO PARA PLANILHA";
         botao.style.background = "#27ae60";
         botao.classList.remove("sucesso");
       }, 1500);
     } else {
-      throw new Error("Resposta do servidor não OK");
+      throw new Error("Erro no servidor");
     }
   } catch (error) {
-    alert("❌ ERRO NO ENVIO!\n\n📱 Verifique:\n• Internet/Wi-Fi\n• Preencheu os campos principais (Aldeia, AISAN)\n\nTente novamente! 💪");
-    console.error("Erro completo:", error);
+    alert("❌ Erro ao enviar. Verifique conexão.");
+    console.error(error);
   } finally {
     if (!response || !response.ok) {
       botao.disabled = false;
@@ -261,7 +270,8 @@ async function gerarESalvar() {
 
 <p style="text-align:center;color:#27ae60;font-weight:bold;margin-top:80px;font-size:16px;">
   Criado por Jonatha dos Santos – SESANI/DSEI-AL/SE<br>
+  ✅ VERSÃO iPHONE PERFEITA - SÓ ENVIA, SEM BAIXAR!
 </p>
 </body>
-
 </html>
+
