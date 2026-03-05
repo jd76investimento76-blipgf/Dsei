@@ -6,19 +6,24 @@
     <title>Solicitação de Materiais</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
             margin: 16px;
             background-color: #f5f5f5;
             color: #333;
         }
+
         h1 {
             text-align: center;
             color: #1a3c6d;
             margin: 0 0 24px;
             font-size: 1.8em;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -27,19 +32,23 @@
             border-radius: 12px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.1);
         }
+
         .search-container {
             position: relative;
             margin: 0 auto 28px;
-            max-width: 100%;
+            max-width: 100%;           /* importante para mobile */
         }
+
         .search-container input {
             width: 100%;
-            padding: 14px 14px 14px 50px;
+            padding: 14px 14px 14px 50px;   /* espaço maior à esquerda */
             border: 2px solid #ddd;
-            border-radius: 999px;
+            border-radius: 999px;           /* bem arredondado */
             font-size: 1.05em;
-            height: 52px;
+            height: 52px;                   /* altura fixa ajuda alinhamento */
+            line-height: 1.4;
         }
+
         .search-container i {
             position: absolute;
             left: 18px;
@@ -47,36 +56,45 @@
             transform: translateY(-50%);
             color: #777;
             font-size: 1.4em;
-            pointer-events: none;
+            pointer-events: none;           /* evita que clique no ícone interfira */
         }
+
+        /* Ajustes mobile */
         @media (max-width: 600px) {
             .search-container input {
                 font-size: 1em;
                 padding: 12px 12px 12px 48px;
                 height: 48px;
             }
+            
             .search-container i {
                 left: 16px;
                 font-size: 1.3em;
             }
         }
+
+        /* resto do estilo continua praticamente igual... */
         .header-fields {
             display: grid;
             grid-template-columns: 1fr;
             gap: 16px;
             margin-bottom: 28px;
         }
+
         @media (min-width: 500px) {
             .header-fields { grid-template-columns: repeat(3, 1fr); }
         }
+
         .header-fields .item { display: flex; flex-direction: column; gap: 6px; }
         .header-fields label { font-weight: bold; color: #444; }
-        .header-fields input, .header-fields select {
+        .header-fields input,
+        .header-fields select {
             padding: 10px 12px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 1em;
         }
+
         select#categoriaSelect {
             width: 100%;
             max-width: 400px;
@@ -87,21 +105,26 @@
             border-radius: 8px;
             border: 1px solid #ccc;
         }
-        h3 {
-            margin: 32px 0 20px;
-            color: #1a3c6d;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
+
+        h3 { 
+            margin: 32px 0 20px; 
+            color: #1a3c6d; 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 10px; 
         }
+
         .categoria { display: none; margin-bottom: 20px; }
         .categoria.ativa { display: block; }
+
         .materials-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 10px;
         }
+
         @media (min-width: 500px)  { .materials-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 900px)  { .materials-grid { grid-template-columns: repeat(3, 1fr); } }
+
         .item {
             display: flex;
             align-items: center;
@@ -111,11 +134,13 @@
             border-radius: 8px;
             border: 1px solid #eee;
         }
+
         .item label {
             flex: 1;
             font-size: 0.97em;
             line-height: 1.4;
         }
+
         .item input[type="number"] {
             width: 90px;
             text-align: center;
@@ -124,19 +149,51 @@
             border-radius: 6px;
             font-size: 1em;
         }
-        button {
-            width: 100%;
-            padding: 16px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.15em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 32px;
-        }
-        button:hover { background: #0052a3; }
+
+        button[type="submit"] {
+    width: 100%;
+    max-width: 500px;               /* evita ficar muito largo em telas grandes */
+    padding: 16px;
+    background: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.18em;
+    font-weight: bold;
+    cursor: pointer;
+    
+    /* Fixo na parte inferior */
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);    /* centraliza perfeitamente */
+    z-index: 1000;
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.35);
+    
+    /* Animação de levitação suave */
+    animation: float 3.5s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background: #0055aa;
+    transform: translateX(-50%) translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 102, 204, 0.5);
+    animation-play-state: paused;   /* pausa a levitação ao hover */
+}
+
+/* Animação de "flutuar" */
+@keyframes float {
+    0%   { transform: translateX(-50%) translateY(0);    }
+    50%  { transform: translateX(-50%) translateY(-8px); }
+    100% { transform: translateX(-50%) translateY(0);    }
+}
+
+/* Espaço no final do conteúdo para não ficar coberto */
+.container {
+    padding-bottom: 110px;   /* ajuste conforme o tamanho do botão */
+}
+
         #sucesso {
             display: none;
             margin: 32px auto;
@@ -151,6 +208,7 @@
             font-weight: bold;
             animation: fadeIn 0.5s ease-in;
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -158,16 +216,17 @@
     </style>
 </head>
 <body>
+
 <div class="container">
+
     <h1>Solicitação de Materiais</h1>
-    
+
     <div class="search-container">
         <i class="fas fa-search"></i>
         <input type="text" id="searchInput" placeholder="Buscar material...">
     </div>
 
-    <!-- COLOQUE AQUI A URL NOVA DO SEU SCRIPT -->
-    <form id="formSolicitacao" action="https://script.google.com/macros/s/AKfycbyV1CSbZqVoMea0NgRobLd00okM47ilRthl2yYAvrR9t6gbqxizXEofIChWQ8oVq_wKyg/exec" method="POST">
+    <form id="formSolicitacao" action="https://script.google.com/macros/s/AKfycbw5hzmevgTTVMGTuCYwfnjYBrFViGE7WwLm6bbQAkH9bIduknpNvJTgFHG2BITIpvRJ/exec" method="POST">
 
         <div class="header-fields">
             <div class="item">
@@ -187,14 +246,14 @@
         <input type="hidden" name="Data da Solicitação" id="data_solicitacao">
 
         <select id="categoriaSelect">
-            <option value="todos">Todos</option>
-            <option value="hidraulico" selected>Hidráulico</option>
-            <option value="eletrico">Elétrico</option>
-            <option value="grs">GRS</option>
-            <option value="mqai">MQAI</option>
-            <option value="pci">PCI</option>
-            <option value="bombas">Bombas</option>
-        </select>
+    <option value="todos">Todos</option>
+    <option value="hidraulico" selected>Hidráulico</option>
+    <option value="eletrico">Elétrico</option>
+    <option value="grs">GRS</option>
+    <option value="mqai">MQAI</option>
+    <option value="pci">PCI</option>
+    <option value="bombas">Bombas</option>
+    </select>
 
         <h3>Materiais (informe apenas as quantidades desejadas)</h3>
 
@@ -471,7 +530,6 @@
         <div id="grs" class="categoria">
     <h4>GRS</h4>
     <div class="materials-grid">
-        <div class="item"><label>Arco de Serra</label><input type="number" min="0" value="0" name="Arco de Serra"></div>
         <div class="item"><label>Bandeja Plástica Amarela para Pintura</label><input type="number" min="0" value="0" name="Bandeja Plástica Amarela para Pintura"></div>
         <div class="item"><label>Broxa Retangular</label><input type="number" min="0" value="0" name="Broxa Retangular"></div>
         <div class="item"><label>Cabo de Vassoura</label><input type="number" min="0" value="0" name="Cabo de Vassoura"></div>
@@ -486,7 +544,6 @@
         <div class="item"><label>Pano de Chão</label><input type="number" min="0" value="0" name="Pano de Chão"></div>
         <div class="item"><label>Protetor Solar 60 FPS</label><input type="number" min="0" value="0" name="Protetor Solar 60 FPS"></div>
         <div class="item"><label>Rodo de 60 CM Grande</label><input type="number" min="0" value="0" name="Rodo de 60 CM Grande"></div>
-        <div class="item"><label>Rolo P/ Pintura - Branco</label><input type="number" min="0" value="0" name="Rolo P/ Pintura - Branco"></div>
         <div class="item"><label>Saco de Lixo Azul 100L</label><input type="number" min="0" value="0" name="Saco de Lixo Azul 100L"></div>
         <div class="item"><label>Saco de Lixo Preto 100L</label><input type="number" min="0" value="0" name="Saco de Lixo Preto 100L"></div>
         <div class="item"><label>Saco de Lixo Preto 60L</label><input type="number" min="0" value="0" name="Saco de Lixo Preto 60L"></div>
@@ -499,7 +556,6 @@
 </div>
 
         <div id="mqai" class="categoria">
-            
     <h4>MQAI</h4>
     <div class="materials-grid">
         <div class="item"><label>Balde de Cloro Pastilhas 10KG V - 12/26</label><input type="number" min="0" value="0" name="Balde de Cloro Pastilhas 10KG V - 12/26"></div>
@@ -523,29 +579,17 @@
         <div class="item"><label>Placa de Sinalização de Indicação de Extintor 30x30cm (E5)</label><input type="number" min="0" value="0" name="Placa de Sinalização de Indicação de Extintor 30x30cm (E5)"></div>
     </div>
 </div>
-<div style="margin: 32px 0 16px;">
-            <label for="justificativa" style="font-weight: bold; color: #c0392b; display: block; margin-bottom: 8px; font-size: 1.1em;">
-                Justificativa da solicitação (obrigatório)<br>
-                <small style="color: #555; font-weight: normal;">Explique o motivo da necessidade dos materiais solicitados</small>
-            </label>
-            <textarea
-                id="justificativa"
-                name="Justificativa"
-                rows="6"
-                required
-                placeholder="Exemplo: Necessário para reparo da rede hidráulica da aldeia X devido a vazamento identificado em vistoria no dia... Prioridade alta devido a..."
-                style="width: 100%; padding: 12px; border: 2px solid #ccc; border-radius: 8px; font-size: 1.05em; resize: vertical;"
-            ></textarea>
-        </div>
 
         <button type="submit">Enviar Solicitação</button>
+
     </form>
 
     <div id="sucesso">✓ Solicitação enviada com sucesso!</div>
+
 </div>
 
 <script>
-    // Data atual automática
+    // Data atual
     const hoje = new Date().toISOString().split('T')[0];
     document.getElementById('data').value = hoje;
     document.getElementById('data_solicitacao').value = new Date().toLocaleString('pt-BR', {
@@ -560,12 +604,15 @@
 
     function mostrarCategoria(valor) {
         categorias.forEach(cat => cat.classList.remove('ativa'));
+
         if (valor === "todos") {
             categorias.forEach(cat => cat.classList.add('ativa'));
         } else {
             const catSelecionada = document.getElementById(valor);
             if (catSelecionada) catSelecionada.classList.add('ativa');
         }
+
+        // Limpa busca e reaplica filtro
         document.getElementById('searchInput').value = '';
         filtrarMateriais('');
     }
@@ -581,43 +628,43 @@
     function filtrarMateriais(termo) {
         const termoLower = termo.toLowerCase().trim();
         const itens = document.querySelectorAll('.categoria.ativa .item');
+
         itens.forEach(item => {
             const nome = item.querySelector('label').textContent.toLowerCase();
             item.style.display = nome.includes(termoLower) ? '' : 'none';
         });
     }
 
-    // Envio do formulário com no-cors (resolve o problema de CORS)
+    // Envio do formulário
     document.getElementById('formSolicitacao').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        const msg = document.getElementById('sucesso');
 
         fetch(this.action, {
             method: 'POST',
-            body: formData,
-            mode: 'no-cors'  // ← chave para funcionar sem CORS explícito
+            body: formData
         })
         .then(() => {
-            msg.textContent = "✓ Solicitação enviada com sucesso! (confira na planilha)";
+            const msg = document.getElementById('sucesso');
             msg.style.display = 'block';
             this.reset();
             document.querySelectorAll('input[type="number"]').forEach(el => el.value = "0");
             document.getElementById('data').value = hoje;
             searchInput.value = '';
             filtrarMateriais('');
-            setTimeout(() => msg.style.display = 'none', 8000);
+
+            setTimeout(() => msg.style.display = 'none', 6000);
         })
         .catch(err => {
-            console.error('Erro:', err);
-            msg.textContent = "❌ Erro ao enviar. Verifique conexão ou URL do script.";
-            msg.style.background = '#ffe6e6';
-            msg.style.color = '#990000';
-            msg.style.borderColor = '#dc3545';
-            msg.style.display = 'block';
-            setTimeout(() => msg.style.display = 'none', 8000);
+            console.error(err);
+            alert('Erro ao enviar. Verifique sua conexão.');
         });
     });
+
+    // Opcional: começar já mostrando "Todos"
+    // mostrarCategoria('todos');
 </script>
+
 </body>
+
 </html>
