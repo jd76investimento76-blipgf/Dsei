@@ -226,7 +226,7 @@ button[type="submit"]:hover {
         <input type="text" id="searchInput" placeholder="Buscar material...">
     </div>
 
-    <form id="formSolicitacao" action="https://script.google.com/macros/s/AKfycbw5hzmevgTTVMGTuCYwfnjYBrFViGE7WwLm6bbQAkH9bIduknpNvJTgFHG2BITIpvRJ/exec" method="POST">
+    <form id="formSolicitacao" action="https://script.google.com/macros/s/AKfycbx6yNkSx9D8sDWmvo4MHiQmNp-R9xiLFPNovKjAEPxLGARCktRJVFX-_uVSBebSIZA63A/exec" method="POST">
 
         <div class="header-fields">
             <div class="item">
@@ -579,6 +579,19 @@ button[type="submit"]:hover {
         <div class="item"><label>Placa de Sinalização de Indicação de Extintor 30x30cm (E5)</label><input type="number" min="0" value="0" name="Placa de Sinalização de Indicação de Extintor 30x30cm (E5)"></div>
     </div>
 </div>
+<div style="margin: 40px 0 24px;">
+            <h3 style="margin-bottom: 12px; color: #c0392b;">
+                Justificativa da solicitação <span style="color: #e74c3c;">*</span>
+            </h3>
+            <textarea 
+                id="justificativa" 
+                name="Justificativa" 
+                rows="20" 
+                required 
+                placeholder="Descreva aqui o motivo da solicitação, urgência, finalidade de uso, local de instalação, problema que será resolvido, etc.&#10;&#10;Mínimo de informação esperada:&#10;- Qual o problema atual?&#10;- Por que esses materiais são necessários?&#10;- Qual a consequência se não for atendido?&#10;&#10;(campo obrigatório)"
+                style="width: 100%; padding: 12px; font-size: 1.05em; border: 1px solid #ccc; border-radius: 8px; resize: vertical; min-height: 280px; line-height: 1.5;"
+            ></textarea>
+        </div>
 
         <button type="submit">Enviar Solicitação</button>
 
