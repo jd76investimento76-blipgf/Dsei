@@ -217,7 +217,7 @@ button[type="submit"]:hover {
 </head>
 <body>
 
-<div class="container">
+<<div class="container">
 
     <h1>Solicitação de Materiais SESANI AL/SE</h1>
 
@@ -255,7 +255,7 @@ button[type="submit"]:hover {
     <option value="bombas">Bombas</option>
     </select>
 
-        <h3>Materiais (informe apenas as quantidades desejadas)</h3>
+    <h3>Materiais (informe apenas as quantidades desejadas)</h3> 
 
         <!-- Categorias -->
         <div id="todos" class="categoria"></div>
@@ -309,7 +309,7 @@ button[type="submit"]:hover {
         <div class="item"><label>Joelho 32 MM</label><input type="number" min="0" value="0" name="Joelho 32 MM"></div>
         <div class="item"><label>Joelho 40 MM</label><input type="number" min="0" value="0" name="Joelho 40 MM"></div>
         <div class="item"><label>Joelho 45 Graus 20 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 20 MM"></div>
-        <div class="item"><label>Joelho 45 Graus 25 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 25 MM"></div>
+        [//]<div class="item"><label>Joelho 45 Graus 25 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 25 MM"></div>
         <div class="item"><label>Joelho 45 Graus 32 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 32 MM"></div>
         <div class="item"><label>Joelho 45 Graus 40 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 40 MM"></div>
         <div class="item"><label>Joelho 45 Graus 50 MM</label><input type="number" min="0" value="0" name="Joelho 45 Graus 50 MM"></div>
@@ -651,7 +651,7 @@ button[type="submit"]:hover {
     // Envio do formulário
     document.getElementById('formSolicitacao').addEventListener('submit', function(e) {
         e.preventDefault();
-        const formData = new FormData(this);
+         const formData = new FormData(this);
 
         fetch(this.action, {
             method: 'POST',
